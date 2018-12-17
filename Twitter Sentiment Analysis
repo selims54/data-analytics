@@ -1,0 +1,266 @@
+#########################################################################
+# Selim Sarac   
+#Twitter Sentiment Analysis
+#########################################################################
+import tweepy
+import pandas as pd
+import matplotlib.pyplot as pl
+import numpy as np
+
+from tweepy import OAuthHandler
+from tweepy import API
+from tweepy import Cursor
+from datetime import datetime, date, time, timedelta
+from collections import Counter
+from textblob import TextBlob
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+
+#########################################################################
+
+
+#access keys and tokens must be taken from twitter website with a valid account.
+#https://developer.twitter.com
+
+consumerKey = '' 
+consumerSecret = ''
+auth = OAuthHandler(consumerKey,consumerSecret)
+accessToken = ''
+accessTokenSecret = ''
+
+auth.set_access_token(accessToken, accessTokenSecret)
+api = tweepy.API(auth,wait_on_rate_limit=True)
+
+#########################################################################
+
+
+#tweet collection for blockchain and cryptocurrency
+
+#blockchain tweets are collected using hashtags
+blckc_df=[]
+blckc_sentiment=[]
+blckc_tweet_time=[]
+blckc_place=[]
+for tweet in tweepy.Cursor(api.search,q="#blockchain",count=50000000,lang=\en\, since=\2016-02-01\).items():
+    print (tweet.created_at, tweet.text, tweet.place, tweet.coordinates)
+
+    #classification is done using TextBlob
+    if TextBlob(tweet.text).sentiment.polarity>0 and TextBlob(tweet.text).sentiment.subjectivity>0.5:
+        print "Positive"
+        blckc_sentiment.append("Positive")
+    elif TextBlob(tweet.text).sentiment.polarity<0:
+        print "Negative"
+        blckc_sentiment.append("Negative")
+    else:\n,
+        print "Neutral"
+        blckc_sentiment.append("Neutral")
+
+    blckc_df.append(tweet.text)
+    blckc_place.append(tweet.place)
+    blckc_tweet_time.append(tweet.created_at)
+
+#Dataframe is created.
+tweet_blckc_df=pd.DataFrame([blckc_tweet_time,blckc_df,blckc_sentiment,blckc_place],["Time","Tweets","Sentiment","Place"])    
+tweet_blckc_df=tweet_blckc_df.T
+
+# record to csv file for further analysis
+tweet_blckc_df.to_csv('blockchain.csv',encoding='utf-8')
+
+
+#cryptcurrency tweets are collected using hashtags
+cryp_df=[]
+cryp_sentiment=[]
+cryp_tweet_time=[]
+cryp_place=[]
+for tweet in tweepy.Cursor(api.search,q="#cryptcurrency",count=50000000,lang=\en\, since=\2016-02-01\).items():
+    print (tweet.created_at, tweet.text, tweet.place, tweet.coordinates)
+
+    #classification is done using TextBlob
+    if TextBlob(tweet.text).sentiment.polarity>0 and TextBlob(tweet.text).sentiment.subjectivity>0.5:
+        print "Positive"
+        cryp_sentiment.append("Positive")
+    elif TextBlob(tweet.text).sentiment.polarity<0:
+        print "Negative"
+        cryp_sentiment.append("Negative")
+    else:\n,
+        print "Neutral"
+        cryp_sentiment.append("Neutral")
+
+    cryp_df.append(tweet.text)
+    cryp_place.append(tweet.place)
+    cryp_tweet_time.append(tweet.created_at)
+
+#Dataframe is created.
+tweet_cryp_df=pd.DataFrame([cryp_tweet_time,cryp_df,cryp_sentiment,cryp_place],["Time","Tweets","Sentiment","Place"])    
+tweet_cryp_df=tweet_cryp_df.T
+# record to csv file for further analysis
+tweet_blckc_df.to_csv('cryptcurrency.csv',encoding='utf-8')
+                           
+##############################################################################
+
+#Tweet cleaning to see which coin is popular(retweets are cleaned)
+tweet_cryp_nort_df= tweet_cryp_df[~tweet_cryp_df['Tweets'].str.startswith('RT')]
+
+                           
+##############################################################################
+#Wordcloud generation to see which coin is popular on twitter
+##############################################################################
+
+# wordcloud generation for tweet_cryp_df
+wordcloudblck = WordCloud().generate(str(tweet_blckc_df["Tweets"]))
+plt.figure(figsize=(20,20))
+plt.imshow(wordcloudblck, interpolation='bilinear')
+plt.axis("off")
+                           
+# wordcloud generation for tweet_cryp_df
+wordcloudcrypt = WordCloud().generate(str(tweet_cryp_df["Tweets"]))
+plt.figure(figsize=(20,20))
+plt.imshow(wordcloudcrypt, interpolation='bilinear')
+plt.axis("off")
+
+# wordcloud generation for tweet_cryp_nort_df
+wordcloudcryptnort = WordCloud().generate(str(tweet_cryp_nort_df["Tweets"]))
+plt.figure(figsize=(20,20))
+plt.imshow(wordcloudcryptnort, interpolation='bilinear')
+plt.axis("off")                          
+                           
+#######################################################################################
+#                Tweet collection process for coins Bitcoin, Ripple Ethereum, Litecoin
+#######################################################################################
+
+#Bitcoin tweets are collected using hashtags
+btc_df=[]
+btc_sentiment=[]
+btc_tweet_time=[]
+btc_place=[]
+for tweet in tweepy.Cursor(api.search,q="#bitcoin",count=50000000,lang=\en\, since=\2016-02-01\).items():
+    print (tweet.created_at, tweet.text, tweet.place, tweet.coordinates)
+
+    #classification is done using TextBlob
+    if TextBlob(tweet.text).sentiment.polarity>0 and TextBlob(tweet.text).sentiment.subjectivity>0.5:
+        print "Positive"
+        btc_sentiment.append("Positive")
+    elif TextBlob(tweet.text).sentiment.polarity<0:
+        print "Negative"
+        btc_sentiment.append("Negative")
+    else:\n,
+        print "Neutral"
+        btc_sentiment.append("Neutral")
+
+    btc_df.append(tweet.text)
+    btc_place.append(tweet.place)
+    btc_tweet_time.append(tweet.created_at)
+
+#Dataframe is created.
+tweet_btc_df=pd.DataFrame([btc_tweet_time,btc_df,btc_sentiment,btc_place],["Time","Tweets","Sentiment","Place"])    
+tweet_btc_df=tweet_btc_df.T                           
+
+# record to csv file for further analysis
+tweet_btc_df.to_csv('bitcoin.csv',encoding='utf-8')
+                           
+#Ethereum Tweets are collected using hashtags
+etc_df=[]
+etc_sentiment=[]
+etc_tweet_time=[]
+etc_place=[]
+for tweet in tweepy.Cursor(api.search,q="#ethereum",count=50000000,lang=\en\, since=\2016-02-01\).items():
+    print (tweet.created_at, tweet.text, tweet.place, tweet.coordinates)
+    if TextBlob(tweet.text).sentiment.polarity>0 and TextBlob(tweet.text).sentiment.subjectivity>0.5:
+        print "Positive"
+        etc_sentiment.append("Positive")
+    elif TextBlob(tweet.text).sentiment.polarity<0:
+        print "Negative"
+        etc_sentiment.append("Negative")
+    else:
+        print "Neutral"
+        etc_sentiment.append("Neutral")
+    etc_df.append(tweet.text)
+    etc_place.append(tweet.place)
+    etc_tweet_time.append(tweet.created_at)
+
+#Dataframe is created.
+tweet_etc_df=pd.DataFrame([etc_tweet_time,etc_df,etc_sentiment,etc_place],["Time","Tweets","Sentiment","Place"])    
+tweet_etc_df=tweet_etc_df.T 
+
+# record to csv file for further analysis
+tweet_etc_df.to_csv('ethereum.csv',encoding='utf-8')
+                           
+#Ripple Tweets are collected using hashtags
+rtc_df=[]
+rtc_sentiment=[]
+rtc_tweet_time=[]
+rtc_place=[]
+for tweet in tweepy.Cursor(api.search,q="#XRP",count=50000000,lang=\en\, since=\2016-02-01\).items():
+    print (tweet.created_at, tweet.text, tweet.place, tweet.coordinates)
+    if TextBlob(tweet.text).sentiment.polarity>0 and TextBlob(tweet.text).sentiment.subjectivity>0.5:
+        print "Positive"
+        rtc_sentiment.append("Positive")
+    elif TextBlob(tweet.text).sentiment.polarity<0:
+        print "Negative"
+        rtc_sentiment.append("Negative")
+    else:
+        print "Neutral"
+        rtc_sentiment.append("Neutral")
+    rtc_df.append(tweet.text)
+    rtc_place.append(tweet.place)
+    rtc_tweet_time.append(tweet.created_at)
+
+#Dataframe is created.
+tweet_rtc_df=pd.DataFrame([rtc_tweet_time,rtc_df,rtc_sentiment,rtc_place],["Time","Tweets","Sentiment","Place"])    
+tweet_rtc_df=tweet_rtc_df.T 
+
+# record to csv file for further analysis
+tweet_rtc_df.to_csv('ripple.csv',encoding='utf-8')
+
+#Litecoin Tweets are collected using hashtags
+ltc_df=[]
+ltc_sentiment=[]
+ltc_tweet_time=[]
+ltc_place=[]
+for tweet in tweepy.Cursor(api.search,q="#XRP",count=50000000,lang=\en\, since=\2016-02-01\).items():
+    print (tweet.created_at, tweet.text, tweet.place, tweet.coordinates)
+    if TextBlob(tweet.text).sentiment.polarity>0 and TextBlob(tweet.text).sentiment.subjectivity>0.5:
+        print "Positive"
+        ltc_sentiment.append("Positive")
+    elif TextBlob(tweet.text).sentiment.polarity<0:
+        print "Negative"
+        ltc_sentiment.append("Negative")
+    else:
+        print "Neutral"
+        ltc_sentiment.append("Neutral")
+
+    ltc_df.append(tweet.text)
+    ltc_place.append(tweet.place)
+    ltc_tweet_time.append(tweet.created_at)
+
+#Dataframe is created.
+tweet_ltc_df=pd.DataFrame([ltc_tweet_time,ltc_df,ltc_sentiment,ltc_place],["Time","Tweets","Sentiment","Place"])    
+tweet_ltc_df=tweet_ltc_df.T
+
+# record to csv file for further analysis
+tweet_ltc_df.to_csv('litecoin.csv',encoding='utf-8')
+                           
+################################################################################################
+#                               Visualization
+################################################################################################
+
+plt.style.use('ggplot')
+%matplotlib inline
+                           
+index = np.arange(3)
+bar_width = 0.35
+opacity = 0.4
+error_config = {'ecolor': '0.3'}
+
+bitcoin     = plt.bar(index+bar_width, tweet_btc_df["Sentiment"].value_counts(), bar_width, label="Bitcoin")
+ethereum    = plt.bar(index+bar_width, tweet_etc_df["Sentiment"].value_counts(), bar_width, label="Ethereum")
+ripple      = plt.bar(index+bar_width, tweet_rtc_df["Sentiment"].value_counts(), bar_width, label="Ripple")
+litecoin    = plt.bar(index+bar_width, tweet_ltc_df["Sentiment"].value_counts(), bar_width, label="Litecoin")
+
+plt.xlabel('Sentiment')
+plt.ylabel('#of People')
+plt.title('Sentiments for Digital Coins')
+plt.xticks(index + bar_width, ("Neutral", "Positive", "Negative"))
+plt.legend()
+
+plt.tight_layout()
+plt.show()
