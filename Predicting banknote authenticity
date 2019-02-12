@@ -1,0 +1,41 @@
+#Predicting banknote authenticity
+
+#Step: read the data from csv file
+banknoteData<-read.csv("...data_banknote_authentication.csv", head=TRUE,stringsAsFactors=FALSE)
+
+#Step 2: set a seed value
+set.seed (10032)
+
+#Step 3: Convert class column to a factor of categorical data.
+banknoteData$Class<- factor(banknoteData$Class,levels=c(0,1),labels=c("Genuine", "Forged"))
+
+#Step 4: Split data 80% training and 20% test data
+nrows<-nrow(banknoteData)
+alpha<-0.8
+trainindex<-sample(1:nrows,alpha*nrows)
+trainData<-banknoteData[trainindex,]
+testData<-banknoteData[-trainindex,]
+
+#Step 5:Creating decision tree model using data set
+model<-rpart(Class~WaveletVar+WaveletSkew+WaveletCurt+Entropy,data = trainData,method="class")
+
+#Step 6: Print the data in cptable of the tree generated in previous step
+model$cptable
+
+#Step 7:Plot the tree using plot() function
+plot(model, uniform = TRUE, margin = 0.1, branch = 0.5, compress = TRUE)
+
+#Step 8: Plot the tree using prp() function
+prp(model)
+
+#Step 9 Plot the cross validated error against complexity p parameter to find the cp value to prune the tree
+plotcp(model)
+
+#Step10 Prune the tree and predict the performance
+treePruned <- prune(model, cp=0.011)
+banknotePredication <- predict(treePruned, banknoteData, type="class")
+table(banknoteData$Class, banknotePredication, dnn=c("Actual", "Prediction"))
+predTable<-table(banknoteData$Class, banknotePredication, dnn=c("Actual", "Prediction"))
+accuracy<-(predTable[1,1]+predTable[2,2])/sum(predTable)
+accuracy
+0.9650146
