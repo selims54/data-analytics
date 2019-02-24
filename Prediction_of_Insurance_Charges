@@ -1,0 +1,157 @@
+#Part1: Load  insurance.csv data into a data frame
+insurance<-read.csv("...insurance.csv")
+insurance<-as.data.frame(insurance)
+
+#Part2: Use a bar chart to plot the distribution of charges
+ggplot(insurance)+geom_histogram(aes(x=charges))
+
+#Part 3. Detect Patterns among Variables
+install.packages("carData")
+install.packages("car")
+library(carData)
+library(car)
+scatterplotMatrix(insurance[c("age","bmi","children","charges")])
+#Use corrgram() function from corrgram library to plot the inter-correlation between predictors
+corrgram(insurance,order = TRUE, lower.panel = panel.shade, upper.panel =  panel.pie,text.panel = panel.txt, main = "Corrogram of Insurance Variable")
+
+#Part 4. Split 80% of data for training and 20% for testing.
+nrows<-nrow(insurance)
+alpha<-0.8
+trainIndex<-sample(1:nrows,alpha*nrows)
+trainDataset<-insurance[trainIndex,]
+head(trainDataset)
+testDataset<-insurance[-trainIndex,]
+head(testDataset)
+
+#Part 5: For each predictor, fit a simple linear regression model to training data.
+          #Every variable with charges relationship is investigated by using linear regression model
+agemodel<-lm(charges~age,data = trainDataset)
+sexmodel<-lm(charges~sex,data = trainDataset)
+bmimodel<-lm(charges~bmi,data = trainDataset)
+childrenmodel<-lm(charges~children,data = trainDataset)
+smokermodel<-lm(charges~smoker,data = trainDataset)
+regionmodel<-lm(charges~region,data = trainDataset)
+
+#Part 6:Use scatter plot with regression line to back up your assertions visually.
+ggplot(trainDataset, aes(x=age, y=charges)) + geom_point() + geom_smooth(method=lm)
+ggplot(trainDataset, aes(x=sex, y=charges)) + geom_point() + geom_smooth(method=lm)
+ggplot(trainDataset, aes(x=bmi, y=charges)) + geom_point() + geom_smooth(method=lm)  
+ggplot(trainDataset, aes(x=children, y=charges)) + geom_point() + geom_smooth(method=lm) 
+ggplot(trainDataset, aes(x=smoker, y=charges)) + geom_point() + geom_smooth(method=lm)  
+ggplot(trainDataset, aes(x=region, y=charges)) + geom_point() + geom_smooth(method=lm)  
+
+#Part 7For each model, use predict() function on test data to find the model prediction. Then plot charges versus predicted charges
+testDataset$prediction<-predict(agemodel,newdata=testDataset)
+ggplot(testDataset,aes(x=prediction, y=charges))+geom_point()+geom_smooth(method=lm)
+testDataset$prediction<-predict(sexmodel,newdata = testDataset)
+ggplot(testDataset,aes(x=prediction, y=charges))+geom_point()+geom_smooth(method=lm)
+testDataset$prediction<-predict(bmimodel,newdata = testDataset)
+ggplot(testDataset,aes(x=prediction, y=charges))+geom_point()+geom_smooth(method=lm)
+testDataset$prediction<-predict(childrenmodel,newdata = testDataset)
+ggplot(testDataset,aes(x=prediction, y=charges))+geom_point()+geom_smooth(method=lm)
+testDataset$prediction<-predict(smokermodel,newdata = testDataset)
+ggplot(testDataset,aes(x=prediction, y=charges))+geom_point()+geom_smooth(method=lm)
+testDataset$prediction<-predict(regionmodel,newdata = testDataset)
+ggplot(testDataset,aes(x=prediction, y=charges))+geom_point()+geom_smooth(method=lm)
+
+#Part 8.Fit a multiple regression model to predict the response (i.e., charges) using all features: age, sex, bmi, children, smoker, region
+multiplemodel<-lm(charges~age+sex+bmi+children+smoker+region, data = insurance)
+Call:
+lm(formula = charges ~ age + sex + bmi + children + smoker + 
+    region, data = insurance)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-11304.9  -2848.1   -982.1   1393.9  29992.8 
+
+Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+(Intercept)     -11938.5      987.8 -12.086  < 2e-16 ***
+age                256.9       11.9  21.587  < 2e-16 ***
+sexmale           -131.3      332.9  -0.394 0.693348    
+bmi                339.2       28.6  11.860  < 2e-16 ***
+children           475.5      137.8   3.451 0.000577 ***
+smokeryes        23848.5      413.1  57.723  < 2e-16 ***
+regionnorthwest   -353.0      476.3  -0.741 0.458769    
+regionsoutheast  -1035.0      478.7  -2.162 0.030782 *  
+regionsouthwest   -960.0      477.9  -2.009 0.044765 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 6062 on 1329 degrees of freedom
+Multiple R-squared:  0.7509,	Adjusted R-squared:  0.7494 
+F-statistic: 500.8 on 8 and 1329 DF,  p-value: < 2.2e-16
+#The R2 value is 75.09%
+
+#Add age2  (i.e., the square of age predictor) to the train and test data. Name the new column as ageSquared. Then create a new multiple regression model that contains the new variable(in addition to the existing columns):
+insurance$ageSquared<-insurance$age^2
+multiplemodelv2<-lm(charges~age+sex+bmi+children+smoker+region+ageSquared, data = insurance)
+summary(multiplemodelv2)
+Call:
+lm(formula = charges ~ age + sex + bmi + children + smoker + 
+    region + ageSquared, data = insurance)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-11665.1  -2855.8   -944.1   1295.9  30826.0 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)     -6596.665   1689.444  -3.905 9.91e-05 ***
+age               -54.575     80.991  -0.674 0.500532    
+sexmale          -138.428    331.197  -0.418 0.676043    
+bmi               335.211     28.467  11.775  < 2e-16 ***
+children          642.024    143.617   4.470 8.47e-06 ***
+smokeryes       23859.745    410.988  58.055  < 2e-16 ***
+regionnorthwest  -367.812    473.783  -0.776 0.437692    
+regionsoutheast -1031.503    476.172  -2.166 0.030470 *  
+regionsouthwest  -957.546    475.417  -2.014 0.044198 *  
+ageSquared          3.927      1.010   3.887 0.000107 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 6030 on 1328 degrees of freedom
+Multiple R-squared:  0.7537,	Adjusted R-squared:  0.752 
+F-statistic: 451.6 on 9 and 1328 DF,  p-value: < 2.2e-16
+
+
+# Results are so close to previous one.
+
+
+# Part 9 Add the interaction term bmi*smoker to the multiple regression model created
+> multiplemodelv2<-lm(charges~age+sex+bmi+children+smoker+region+ageSquared+bmi*smoker, data = insurance)
+> summary(multiplemodelv2)
+
+Call:
+lm(formula = charges ~ age + sex + bmi + children + smoker + 
+    region + ageSquared + bmi * smoker, data = insurance)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-14886  -1592  -1280  -1023  31346 
+
+Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)    
+(Intercept)      2.854e+03  1.390e+03   2.053  0.04026 *  
+age             -3.321e+01  6.460e+01  -0.514  0.60724    
+sexmale         -5.064e+02  2.645e+02  -1.915  0.05574 .  
+bmi              2.018e+01  2.541e+01   0.794  0.42739    
+children         6.751e+02  1.145e+02   5.893 4.79e-09 ***
+smokeryes       -2.034e+04  1.636e+03 -12.437  < 2e-16 ***
+regionnorthwest -5.993e+02  3.780e+02  -1.586  0.11306    
+regionsoutheast -1.207e+03  3.798e+02  -3.177  0.00152 ** 
+regionsouthwest -1.228e+03  3.793e+02  -3.239  0.00123 ** 
+ageSquared       3.743e+00  8.058e-01   4.645 3.74e-06 ***
+bmi:smokeryes    1.441e+03  5.225e+01  27.583  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 4809 on 1327 degrees of freedom
+Multiple R-squared:  0.8435,	Adjusted R-squared:  0.8423 
+F-statistic:   715 on 10 and 1327 DF,  p-value: < 2.2e-16
+
+#R-squared value is increased to 0.8423
+
+
+
+
