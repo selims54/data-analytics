@@ -33,9 +33,16 @@ plotcp(model)
 
 #Step10 Prune the tree and predict the performance
 treePruned <- prune(model, cp=0.011)
-banknotePredication <- predict(treePruned, banknoteData, type="class")
-table(banknoteData$Class, banknotePredication, dnn=c("Actual", "Prediction"))
+banknotePredication <- predict(treePruned, trainData, type="class")
+predTable<-table(trainData$Class, banknotePredication, dnn=c("Actual", "Prediction")
 predTable<-table(banknoteData$Class, banknotePredication, dnn=c("Actual", "Prediction"))
+predTable
+
+         Prediction
+Actual    Genuine Forged
+  Genuine     602      3
+  Forged        5    487
+  
 accuracy<-(predTable[1,1]+predTable[2,2])/sum(predTable)
 accuracy
-0.9650146
+ 0.9927074
